@@ -1,0 +1,31 @@
+						awk man
+>>> examining fields
+input: 'This seems like a pretty nice example.'
+
+$1: 'This'
+$7: 'example.'
+$0: 'This seems like a pretty nice example.'
+
+>>> regular Expression Constants
+regular expression constants consist of text describing a regular expression enclosed in slashes (such
+as /the answer/) 
+
+>>> escape sequences
+all these escape sequences apply to both string constants and regexp constants
+\\	Aliteral backslash, '\'
+\a 	The 'alert' character, Ctrl-g, ASCII code 7(BEL), this often makes some sort of audible noise
+\b 	Backspace, Ctrl-h, ASCII code 8(BS)
+\f	Formfeed, Ctrl-I, ASCII code 12(FF)
+\n	Newline, Ctrl-j, ASCII code 10 (LF)
+\r 	Carriage return, Ctrl-m, ASCII code 13 (CR).
+\t 	Horizontal TAB, Ctrl-i, ASCII code 9 (HT)
+\v	Vertical TAB, Ctrl-k, ASCII code 11 (VT)
+\nnn	The octal value nnn, where nnn stands for 1 to 3 digits between ‘0’ and ‘7’. For example, the code for the ASCII ESC (escape) character is ‘\033’.
+\xhh...	
+\/	A literal slash (should be used for reexp constants only)
+\" 	A literal double quote (should be used for string constants only)
+
+example: 
+a1time a2host a3level a4program a5msg
+
+awk '%s' - $1 >= "a1time" $2 == "a2host" $4 ~ \"%s\"
