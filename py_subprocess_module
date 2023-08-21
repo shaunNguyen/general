@@ -1,0 +1,95 @@
+		Python's os and subprocess Popen Commands	
+				>>> <<<
+
+=============================================
+
+Intro
+
+Python offers serveral options to run external processes and interact with the os. However, the 
+methods are different for py 2 and 3.
+
+Py 2 has several methods in the os module, which are now deprecated and replaced by the 
+subprocess module, which is preferred option in py 3.
+
+
+=============================================
+
+The os.popen* Methods
+
+The os module offers 4 different methods that allows us to interact with the os (just like you
+would with the cmd line) and create a pipe to other cmds. 
+
+The methods are: popen, popen2, popen3, and popen4
+
+The goal of each of these methods is to be able to call other programs from your Py code. This
+could be calling another executable, like your own compiled C++ program, or a shell cmd like ls
+or mkdir
+
+>>> os.popen
+
+The os.popen method opens a pipe from a command, this pipe allows the command to send its output
+to another command, the output is an open file that can be accessed by other programs. 
+
+#syntax:
+	os.popen(command[, mode[, bufsize]])
+
+command: is what you'll be executing
+mode: defines whether or not this output file is readble ('r') or writable ('w')...
+bufsize: tells popen how much data to buffer:
+	.0 = unbufferred (default val)
+	.1 = line buffered
+	.N = approximate buffer size, N > 0; and default val when N <0
+This method is available for Unix and Windows, and has been deprecated since Python version 2.6
+With python 3, we use subprocess module
+....
+
+=============================================
+
+The subprocess.Popen Method
+
+The python documentation recommends the use of Popen in advanced cases, when other methods such 
+like subprocess.call cannot fulfill our needs. 
+This method allow for the execution of a program as a child process. Because this is executed by
+the OS as a separate process, the results are platform dependent. 
+
+#syntax:
+	subprocess.Popen(args, \ 
+			bufsize=0, \
+			executable=None, \
+			stdin=None, \
+			stdout=None, \
+			stderr=None, \
+			preexec_fn=None, \
+			close_fds=False, \
+			shell=False, \
+			cwd=None, \
+			env=None, \
+			universal_newlines=False, \
+			startupinfo=None, \
+			creationflags=0)
+
+One main difference of Popen is that it is a class and not just a method, Thus when we call 
+subprocess.Popen, we're actually calling the constructor of the class Popen.
+
+args: contains the command for process we want to run, can be an array or a string 
+shell: default to False, On Unix when we need to run a cmd that belongs to the shell, like 
+ls -la, we need to set shell=True
+
+We have instantiate the Popen class, we have access to several useful methods:
+	Popen.poll(): chech if the child process has termicated
+	Popen.wait(): wait for the child porcess to terminate
+	Popen.communicate(): allows to interact with the process
+	...
+The most commonly used method here is communicate method allows us to read data from the stdin,
+and send data to stdout.
+It returns a tuple defined as (stdoutdata, stderrdata)
+
+Example, the code will combine the Windows dir and sort commands
+	import subprocess
+	p1 = subprocess.Popen('dir', shell=True, stdin=None, stdout=subprocess.PIPE, \
+							     stderr=subprocess.PIPE)
+	p2 = subprocess.Popen('sort /R', shell=True, stdin=p1.stdout)
+
+	p1.stdout.close()
+	out, err = p2.communicate()
+
