@@ -1,0 +1,70 @@
+1. if/else 
+if [ -r /etc/sonic/config_db$DEV.json ]; then
+            if [ -r /etc/sonic/init_cfg.json ]; then
+                $SONIC_CFGGEN -j /etc/sonic/init_cfg.json -j /etc/sonic/config_db$DEV.json --write-to-db
+            else
+                $SONIC_CFGGEN -j /etc/sonic/config_db$DEV.json --write-to-db
+            fi
+        fi
+2. trap 
+a shell script can run into problems during its execution, resulting in an error signal that
+interrupts the script unexspectedly.
+Errors occur due to a faulty script design, user actions.
+Bash trap syntax :
+	trap 'handle_error $? $LINENO' ERR
+	trap [options] "[arguments]" [signals]
+handle_error() {
+    if [ "$1" != "0" ]; then
+        echo "ERR: RC:-$1 observed on line $2" >&2
+        RETURN_CODE=$EXT_GENERAL
+    fi
+}
+options: provide added functionality to the command 
+arguments 
+singals 
+
+3. if 
+
+-------------------------------------------------
+-n: check a string is not empty
+
+#!/bin/bash
+
+string="Hello, world!"
+
+if [ -n "$string" ]; then
+    echo "The string is not empty."
+else
+    echo "The string is empty."
+fi
+
+-------------------------------------------------
+-e: check a path is not exist 
+
+#!/bin/bash
+
+KDUMP_KERNEL="/boot/vmlinuz-$(uname -r)"
+
+if [ ! -e "$KDUMP_KERNEL" ]; then
+    echo "The kdump kernel image does not exist."
+else
+    echo "The kdump kernel image exists."
+fi
+
+-------------------------------------------------
+-z option is used to check whether a string is empty
+
+#!/bin/bash
+
+KDUMP_CONFIG="/etc/kdump.conf"
+
+if [ -z "$KDUMP_CONFIG" ]; then
+    echo "The kdump configuration file path is empty."
+else
+    echo "The kdump configuration file path is not empty."
+fi
+
+-------------------------------------------------
+eval command in Unix/Linux systems is used to evaluate and execute a command 
+
+if eval $KEXEC_CMD
