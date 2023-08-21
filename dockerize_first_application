@@ -1,0 +1,26 @@
+let's create your first application :
+=====================================
+https://www.freecodecamp.org/news/a-beginners-guide-to-docker-how-to-create-your-first-docker-application-cc03de9b639f/
+
+1. Install Docker on your machine
+
+2.  Create your project
+Create  a folder on your computer, it's must contain 2 files:
+	. "main.py" -> contain the code to be executed 
+	. "Dockerfile" -> contain the nescessary instructions to create the environment
+
+3. Edit python file 
+
+4. Edit Dockerfile
+A Dockerfile must always start by importing the base image
+We use the keywork 'FROM' to do that
+In our example, we want to import python image name 'latest' for the version
+	FROM python:latest
+
+In order to launch our python code, we must import it into our image
+We use the keyword 'COPY' to do that
+The first parameter 'main.py' is the name of file on the host
+The second param '/' is the path where to put the file on the image
+Here we put the file at the image root folder.
+	COPY main.py /
+We need to define the cmd to launch when we are going to run the image 
