@@ -1,0 +1,54 @@
+## Run an external command, either from the shell or not
+#  The function capture the output of stdout and stderr,
+#  and return then a tupple with exit code, stdout, stderr
+#
+#  @param cmd   Command to execute (full path needed ig not using the shell)
+def run_command(cmd, use_shell=False):
+    '''!
+    Execute a given command
+
+    @param cmd (str) Command to execute. Since we execute the command directly, and not within the
+                     context of the shell, the full path needs to be provided ($PATH is not used).
+                     Command parameters are simply separated by a space.
+                     Should be either string or a list
+
+    @param use_shell (bool) Execute subprocess with shell access
+    '''
+
+    try:
+        if isinstance(cmd, list):
+            if use_shell is False:
+                shcmd = cmd
+            else:
+                shcmd = ''
+                for c in cmd:
+                    shcmd += c + ' '
+        else:
+            if use_shell is False:
+                shcmd = shlex.split(cmd)
+            else:
+                shcmd = cmd
+        proc = subprocess.Popen(shcmd, shell=use_shell, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, close_fds=True)
+        output_stdout, output_stderr = proc.communicate()
+        list_stdout = output_stdout.splitlines()
+        list_stderr = output_stderr.splitlines()
+        return (proc.returncode, list_stdout, list_stderr)
+    except (OSError, ValueError) as e:
+        print("!Exception [%s] encountered while processing the command : %s" % (str(e), str(cmd)))
+        return (1, None, None)
+
+'''
+Example
+
+'''
+(rc, img, err_str) 		 	    = run_command("installer list | grep 'Current: ' | cut -d '-' -f 3-", use_shell=True);
+(rc, img, err_str)		 	    = run_command("installer list | grep 'Next: ' | cut -d '-' -f 3-", use_shell=True);
+(rc_logs, crash_log_filenames, err_str)     = run_command("find /var/crash/ -name 'dmesg.*'", use_shell=False);
+(rc_cores, crash_vmcore_filenames, err_str) = run_command("find /var/crash/ -name 'kdump.*'", use_shell=False);
+(rc, lines, err_str) 			    = run_command("/usr/sbin/kdump-config status", use_shell=False);
+(rc, lines, err_str) 			    = run_command("grep 'USE_KDUMP=.*' %s | cut -d = -f 2" % kdump_cfg, use_shell=True);
+(rc, lines, err_str) 		= run_command("/bin/sed -i -e 's/USE_KDUMP=.*/USE_KDUMP=%s/' %s" % (use_kdump, kdump_cfg), use_shell=False);
+(rc, lines, err_str) 			    = run_command("/usr/sbin/kdump-config unload", use_shell=False)
+
+
+
