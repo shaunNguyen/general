@@ -1,0 +1,42 @@
+How to repackage a built-in debian package
+		>>> <<<
+1. download a package 
+  sudo apt-get install --reinstall --download-only <name_package>
+2. modify a package 
+Copy the deb file to a directory
+
+Create the directory structure
+$ mkdir -p newpack oldpack/DEBIAN
+
+Extract the filesystem tree
+$ dpkg-deb -x file.deb oldpack/
+
+Extract the control information files
+$ dpkg-deb -e file.deb oldpack/DEBIAN
+
+Modify something if you want
+
+Repackage the deb file under newpack directory using xz compression
+$ dpkg-deb -Z xz -b oldpack/ newpack/ 
+
+===================================================================================================
+
+Script				Function
+Post removal (.postrm)		This script consists of commands to be run AFTER the removal is complete.
+Pre-installation (.preinst)	This script consists of commands to be run before the installation.
+Pre-removal (.prerm)		This script consists of the commands to be run before the removal process
+Lists file (.list)		This file contains the list of directories owned/belongs to the package.
+
+===================================================================================================
+
+What are different between postinst and preinst?
+
+preinst script is executed before the package is unpacked and installed on the system. It is typically
+used to perform pre-installation tasks such as checking system requirements, backing up files, or
+stopping services that may conflict with the installation
+
+postinst script is executed after the package has been installed on the system. It is typically used
+to perform post-installation tasks such as configuring the package, starting services, or updating
+system settings.
+
+
