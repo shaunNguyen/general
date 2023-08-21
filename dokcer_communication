@@ -1,0 +1,207 @@
+https://stackoverflow.com/questions/36035595/communicating-between-docker-containers-in-different-networks-on-the-same-host
+
+
+Communicating between Docker containers in different networks on the same host :
+================================================================================
+Container in different networks can not communicate with each other because iptables drop such packets.
+	sudo iptables -t filter -vL
+Rules can be added to DOCKER-USER chain to allow commnunication between different networks. 
+The bridge interface names of the network( mynetwork1, mynetwork2) need to be found first. Their name are usually look like br-07d....., and they can be found using command ifconfig or ip link show
+
+sudo iptables -I DOCKER-USER -i br-cbcc4216c23d -o br-e765a811d111 -s 172.25.0.2 -d 172.26.0.2 -j ACCEPT
+sudo iptables -I DOCKER-USER -i br-e765a811d111 -o br-cbcc4216c23d -s 172.26.0.2 -d 172.25.0.2 -j ACCEPT
+
+sudo iptables -I DOCKER-USER -i br-cbcc4216c23d -o br-e765a811d111 -s 172.25.0.4 -d 172.26.0.2 -j ACCEPT
+sudo iptables -I DOCKER-USER -i br-e765a811d111 -o br-cbcc4216c23d -s 172.26.0.2 -d 172.25.0.4 -j ACCEPT
+
+Chain DOCKER (5 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     tcp  --  !br-e765a811d111 br-e765a811d111  anywhere             172.26.0.2           tcp dpt:http-alt
+
+    0     0 ACCEPT     tcp  --  !br-8c4d9f69a77d br-8c4d9f69a77d  anywhere             172.28.0.2           tcp dpt:27017
+    0     0 ACCEPT     tcp  --  !br-caef289da324 br-caef289da324  anywhere             172.27.0.3           tcp dpt:9092
+
+sudo iptables -I DOCKER-USER -i br-e765a811d111 -o br-8c4d9f69a77d -s 172.26.0.2 -d 172.28.0.2 -j ACCEPT
+sudo iptables -I DOCKER-USER -i br-8c4d9f69a77d -o br-e765a811d111 -s 172.28.0.2 -d 172.26.0.2 -j ACCEPT
+
+sudo iptables -I DOCKER-USER -i br-8c4d9f69a77d -o br-e765a811d111 -s 172.28.0.2 -d 172.26.0.2 -j ACCEPT
+sudo iptables -I DOCKER-USER -i br-caef289da324 -o br-e765a811d111 -s 172.27.0.3 -d 172.26.0.2 -j ACCEPT
+
+
+quang20@quang20:~$ sudo iptables -t filter -vL
+[sudo] password for quang20:
+Chain INPUT (policy ACCEPT 11952 packets, 786K bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+  114  7144 DOCKER-USER  all  --  any    any     anywhere             anywhere
+  114  7144 DOCKER-ISOLATION-STAGE-1  all  --  any    any     anywhere             anywhere
+    0     0 ACCEPT     all  --  any    br-e765a811d111  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    br-e765a811d111  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-e765a811d111 !br-e765a811d111  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-e765a811d111 br-e765a811d111  anywhere             anywhere
+  425 41683 ACCEPT     all  --  any    br-cbcc4216c23d  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    2   120 DOCKER     all  --  any    br-cbcc4216c23d  anywhere             anywhere
+   16  2887 ACCEPT     all  --  br-cbcc4216c23d !br-cbcc4216c23d  anywhere             anywhere
+    2   120 ACCEPT     all  --  br-cbcc4216c23d br-cbcc4216c23d  anywhere             anywhere
+   97  257K ACCEPT     all  --  any    docker0  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    docker0  anywhere             anywhere
+   88  6037 ACCEPT     all  --  docker0 !docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  docker0 docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  any    br-12b42e5eb256  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    br-12b42e5eb256  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-12b42e5eb256 !br-12b42e5eb256  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-12b42e5eb256 br-12b42e5eb256  anywhere             anywhere
+
+Chain OUTPUT (policy ACCEPT 11979 packets, 838K bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain DOCKER (4 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.2           tcp dpt:27017
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.4           tcp dpt:29094
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.4           tcp dpt:9092
+    0     0 ACCEPT     tcp  --  !br-e765a811d111 br-e765a811d111  anywhere             172.26.0.2           tcp dpt:http-alt
+
+Chain DOCKER-ISOLATION-STAGE-1 (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DOCKER-ISOLATION-STAGE-2  all  --  br-e765a811d111 !br-e765a811d111  anywhere             anywhere
+   16  2887 DOCKER-ISOLATION-STAGE-2  all  --  br-cbcc4216c23d !br-cbcc4216c23d  anywhere             anywhere
+  108  7237 DOCKER-ISOLATION-STAGE-2  all  --  docker0 !docker0  anywhere             anywhere
+    0     0 DOCKER-ISOLATION-STAGE-2  all  --  br-12b42e5eb256 !br-12b42e5eb256  anywhere             anywhere
+71172   80M RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-ISOLATION-STAGE-2 (4 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DROP       all  --  any    br-e765a811d111  anywhere             anywhere
+    0     0 DROP       all  --  any    br-cbcc4216c23d  anywhere             anywhere
+    0     0 DROP       all  --  any    docker0  anywhere             anywhere
+    0     0 DROP       all  --  any    br-12b42e5eb256  anywhere             anywhere
+26484 1455K RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-USER (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+71192   80M RETURN     all  --  any    any     anywhere             anywhere
+quang20@quang20:~$
+quang20@quang20:~$
+quang20@quang20:~$
+quang20@quang20:~$
+quang20@quang20:~$ sudo iptables -I DOCKER-USER -i br-cbcc4216c23d -o br-e765a811d111 -s 172.25.0.2 -d 172.26.0.2 -j ACCEPT
+quang20@quang20:~$
+quang20@quang20:~$ sudo iptables -t filter -vL
+Chain INPUT (policy ACCEPT 378 packets, 25469 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+  189 11844 DOCKER-USER  all  --  any    any     anywhere             anywhere
+  189 11844 DOCKER-ISOLATION-STAGE-1  all  --  any    any     anywhere             anywhere
+    0     0 ACCEPT     all  --  any    br-e765a811d111  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    br-e765a811d111  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-e765a811d111 !br-e765a811d111  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-e765a811d111 br-e765a811d111  anywhere             anywhere
+  500 46383 ACCEPT     all  --  any    br-cbcc4216c23d  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    2   120 DOCKER     all  --  any    br-cbcc4216c23d  anywhere             anywhere
+   16  2887 ACCEPT     all  --  br-cbcc4216c23d !br-cbcc4216c23d  anywhere             anywhere
+    2   120 ACCEPT     all  --  br-cbcc4216c23d br-cbcc4216c23d  anywhere             anywhere
+   97  257K ACCEPT     all  --  any    docker0  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    docker0  anywhere             anywhere
+   88  6037 ACCEPT     all  --  docker0 !docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  docker0 docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  any    br-12b42e5eb256  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    br-12b42e5eb256  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-12b42e5eb256 !br-12b42e5eb256  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-12b42e5eb256 br-12b42e5eb256  anywhere             anywhere
+
+Chain OUTPUT (policy ACCEPT 376 packets, 27005 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain DOCKER (4 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.2           tcp dpt:27017
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.4           tcp dpt:29094
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.4           tcp dpt:9092
+    0     0 ACCEPT     tcp  --  !br-e765a811d111 br-e765a811d111  anywhere             172.26.0.2           tcp dpt:http-alt
+
+Chain DOCKER-ISOLATION-STAGE-1 (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DOCKER-ISOLATION-STAGE-2  all  --  br-e765a811d111 !br-e765a811d111  anywhere             anywhere
+   16  2887 DOCKER-ISOLATION-STAGE-2  all  --  br-cbcc4216c23d !br-cbcc4216c23d  anywhere             anywhere
+  108  7237 DOCKER-ISOLATION-STAGE-2  all  --  docker0 !docker0  anywhere             anywhere
+    0     0 DOCKER-ISOLATION-STAGE-2  all  --  br-12b42e5eb256 !br-12b42e5eb256  anywhere             anywhere
+71247   80M RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-ISOLATION-STAGE-2 (4 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DROP       all  --  any    br-e765a811d111  anywhere             anywhere
+    0     0 DROP       all  --  any    br-cbcc4216c23d  anywhere             anywhere
+    0     0 DROP       all  --  any    docker0  anywhere             anywhere
+    0     0 DROP       all  --  any    br-12b42e5eb256  anywhere             anywhere
+26484 1455K RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-USER (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     all  --  br-cbcc4216c23d br-e765a811d111  172.25.0.2           172.26.0.2
+71267   80M RETURN     all  --  any    any     anywhere             anywhere
+quang20@quang20:~$
+quang20@quang20:~$
+quang20@quang20:~$
+quang20@quang20:~$ sudo iptables -I DOCKER-USER -i br-e765a811d111 -o br-cbcc4216c23d -s 172.26.0.2 -d 172.25.0.2 -j ACCEPT
+quang20@quang20:~$ sudo iptables -t filter -vL
+Chain INPUT (policy ACCEPT 111 packets, 7032 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+  207 12972 DOCKER-USER  all  --  any    any     anywhere             anywhere
+  207 12972 DOCKER-ISOLATION-STAGE-1  all  --  any    any     anywhere             anywhere
+    0     0 ACCEPT     all  --  any    br-e765a811d111  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    br-e765a811d111  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-e765a811d111 !br-e765a811d111  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-e765a811d111 br-e765a811d111  anywhere             anywhere
+  518 47511 ACCEPT     all  --  any    br-cbcc4216c23d  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    2   120 DOCKER     all  --  any    br-cbcc4216c23d  anywhere             anywhere
+   16  2887 ACCEPT     all  --  br-cbcc4216c23d !br-cbcc4216c23d  anywhere             anywhere
+    2   120 ACCEPT     all  --  br-cbcc4216c23d br-cbcc4216c23d  anywhere             anywhere
+   97  257K ACCEPT     all  --  any    docker0  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    docker0  anywhere             anywhere
+   88  6037 ACCEPT     all  --  docker0 !docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  docker0 docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  any    br-12b42e5eb256  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    br-12b42e5eb256  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-12b42e5eb256 !br-12b42e5eb256  anywhere             anywhere
+    0     0 ACCEPT     all  --  br-12b42e5eb256 br-12b42e5eb256  anywhere             anywhere
+
+Chain OUTPUT (policy ACCEPT 109 packets, 7016 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain DOCKER (4 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.2           tcp dpt:27017
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.4           tcp dpt:29094
+    0     0 ACCEPT     tcp  --  !br-cbcc4216c23d br-cbcc4216c23d  anywhere             172.25.0.4           tcp dpt:9092
+    0     0 ACCEPT     tcp  --  !br-e765a811d111 br-e765a811d111  anywhere             172.26.0.2           tcp dpt:http-alt
+
+Chain DOCKER-ISOLATION-STAGE-1 (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DOCKER-ISOLATION-STAGE-2  all  --  br-e765a811d111 !br-e765a811d111  anywhere             anywhere
+   16  2887 DOCKER-ISOLATION-STAGE-2  all  --  br-cbcc4216c23d !br-cbcc4216c23d  anywhere             anywhere
+  108  7237 DOCKER-ISOLATION-STAGE-2  all  --  docker0 !docker0  anywhere             anywhere
+    0     0 DOCKER-ISOLATION-STAGE-2  all  --  br-12b42e5eb256 !br-12b42e5eb256  anywhere             anywhere
+71265   80M RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-ISOLATION-STAGE-2 (4 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DROP       all  --  any    br-e765a811d111  anywhere             anywhere
+    0     0 DROP       all  --  any    br-cbcc4216c23d  anywhere             anywhere
+    0     0 DROP       all  --  any    docker0  anywhere             anywhere
+    0     0 DROP       all  --  any    br-12b42e5eb256  anywhere             anywhere
+26484 1455K RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-USER (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     all  --  br-e765a811d111 br-cbcc4216c23d  172.26.0.2           172.25.0.2
+    0     0 ACCEPT     all  --  br-cbcc4216c23d br-e765a811d111  172.25.0.2           172.26.0.2
+71285   80M RETURN     all  --  any    any     anywhere             anywhere
+
