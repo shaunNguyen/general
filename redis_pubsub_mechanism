@@ -1,0 +1,58 @@
+how to use Redis — Getting Notified When a Key is Expired or Changed
+
+1. enable notify utility :
+- by CLI : 
+	redis-cli CONFIG SET notify-keyspace-events KEA
+- by /etc/redis/redis.conf :
+	1. add notify-keyspace-events KEA by change KEA instead of "" 
+	2. restart redis-server 
+
+2. redis-cli psubscribe '__key*__:*'
+
+3. SET/HSET/ or any to get notify 
+
+admin@sonic:~$ redis-cli psubscribe '__key*__:*'
+Reading messages... (press Ctrl-C to quit)
+1) "psubscribe"
+2) "__key*__:*"
+3) (integer) 1
+
+
+127.0.0.1:6379> set quang abc
+OK
+================
+https://redis.io/docs/manual/keyspace-notifications/
+
+
+127.0.0.1:6379[4]> psubscribe '__keyspace*__:SHAUN*'
+
+==================================
+how to use Redis — Getting Notified When a Key is Expired or Changed
+
+1. enable notify utility :
+- by CLI : 
+	redis-cli CONFIG SET notify-keyspace-events KEA
+- by /etc/redis/redis.conf :
+	1. add notify-keyspace-events KEA by change KEA instead of "" 
+	2. restart redis-server 
+
+2. redis-cli psubscribe '__key*__:*'
+
+3. SET/HSET/ or any to get notify 
+
+
+admin@sonic:~$ redis-cli psubscribe '__key*__:PS*'
+psubscribe '__keyspace@0__:PS*'
+Reading messages... (press Ctrl-C to quit)
+1) "psubscribe"
+2) "__key*__:*"
+3) (integer) 1
+1) "pmessage"
+2) "__key*__:*"
+3) "__keyspace@0__:quang"
+4) "set"
+
+
+===============
+https://redis.io/docs/manual/keyspace-notifications/
+
