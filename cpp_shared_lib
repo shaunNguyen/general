@@ -1,0 +1,49 @@
+SHARED LIBRARIES :
+------------------
+1. shared lib name :
+- every shared libraries has a special name called the "soname" : lib*.so 
+- the lowest-level C libraries dont start with lib 
+- on the working system a fully-qualified soname is simply a sympolic link to the shared library's 'real name'
+- every shared library also has a 'real name', which is the filename containing the actual library code : adds the
+soname period, a minor number, another priod and the release number ( last period and release number are optional) 
+example:
+/usr/lib/libreadline.so.3 	a fully-qualified soname
+/usr/lib/libreadline.so.3.0 	realname 
+/usr/lib/libreadline.so 	linker name
+
+2. filesystem placement 
+- shared libraries must be placed somewhere in the filesystem. 
+- GNU std recommend installing by default all libraries in /usr/local/lib/ when distribute source code 
+- all commands should go into /usr/local/bin 
+- FHS : most libraries should be installed in 		/usr/lib  - not a part of the system 
+- but libraries required for startup should be in 	/lib
+
+3. How libraties is used : 
+- GNU glibc-based systems, including all Linux systems, starting up an ELF binary executable automatically causes 
+- Linux systems, this loader is named /lib/ld-linux.so.X - X is version number 
+- /etc/ld.so.conf : program ldconfig by default 
+- /etc/ld.so.preload : enter the name of overriding libraries (.o files) 
+
+4. creating a shared library
+- first create the object files that will go into the shared library using the gcc -fPIC or -fpic flag
+fpic : enable position independent code
+- then create a shared lib 
+example : 
+gcc -fPIC -g -c -Wall a.c
+gcc -fPIC -g -c -Wall b.c
+gcc -shared -Wl,-soname,libmystuff.so.1 \
+    -o libmystuff.so.1.0.1 a.o b.o -lc
+- pass the soname by using the -Wl gcc option
+
+5. Installing and using a shared library 
+- first, create the shared libraries somewhere
+- then, set up the necessary symbolic links, in particular a link from a soname to the real name 
+	ldconfig -n directory_with_shared_libraries
+- finally, when you compile your programs, you'll need to tell the linker about any static and shared libraries 
+that you're using. use -l or -L options for this 
+
+ 
+====================
+export LD_LIBRARY_PATH=/home/faye:$LD_LIBRARY_PATH
+https://www.fayewilliams.com/2015/07/14/installing-and-accessing-shared-libraries/#:~:text=You%20need%20to%20copy%20the%20library%20to%20that,of%20libraries%20available%20in%20the%20standard%20system%20directories%3A
+
