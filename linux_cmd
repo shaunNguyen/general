@@ -63,3 +63,40 @@ The command is designed to work without user interaction
 ex:
 	curl -X GET https://api.apify.com/v2/key-value-stores/tVaYRsPHLjNdNBu7S/records/LATEST?disableRedirect=true
 
+10. ufw
+
+ufw [--dry-run] [options] [rule syntax]
+notice :
+	-dry-run: informs cmd to not make any changes, instead you will see the results of ur changes in the output 
+ufw can be used in two ways:
+	.simple syntax: specifies a port and optionally the protocol
+	.full syntax: specifies source, destination, port and (optionally) the protocol
+for example, you want to allow traffic on port 22 (SSH), run :
+	sudo ufw allow 22
+prevent traffic on port 22 :
+	sudo ufw deny 22
+add protocol, run :
+	sudo ufw deny 22/tcp 
+11 .netstat 
+View listening processes :
+	$ sudo netstat -tulpen
+t: tcp
+u: udp
+l: listening sockets
+p: program connection
+e: extended info
+n: address, users and ports numnerically
+- listening processes can be thought of as software that is in "server" mode
+- each listening process :
+	.protocol : cp/udp
+	.local addr
+	.port it is listening on
+	.user
+	.PID/Program name
+local address - 0.0.0.0. : is listening any for connections from any machine 
+	      - 127.0.0.1 : it is only listening for connections on the localhost 
+ESTABLISHED - state
+
+Monitoring data being sent over the network
+	tcpdump
+	wireshark 
