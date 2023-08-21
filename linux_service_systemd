@@ -1,0 +1,64 @@
+		How to control and manage systemd services with systemctl 
+
+===================================================================================================
+
+>>> Viewing systemd unit files
+.Systemd's most important abstraction is the unit, which represents any resource maintained by os such as
+daemons, sockets, devices and many others.
+.unit files are found in3 dirs:
+	./lib/systemd/system
+	./run/systemd/system: the runtime unit config, these files change unit behavior at runtime, they are 
+	created dynamically and exist only for the actual boot session
+	./etc/systemd/system: unit files with the highest priority. If you need t ochange a unit configuration, 
+	you will typically edit the files in this directory
+ 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
+layout:
+	1. location
+	2. types of systemd units
+	3. manage service using systemd service unit
+	4. Unit Section
+	5. Service Section
+	6. Install Section
+	7. create service
+1. locations:
+/usr/lib/systemd/system/	systemd unit files that are distributed with installed RPM packages
+/run/systemd/system/		systemd unit files that are created at run time, this directory can overwrite the dir with installed service unit files
+/etc/systemd/system		systemd unit files created by systemctl enable, manually created by a user
+
+2. types of systemd units:
+Unit type		file extension		description
+Service			.service		a system service
+Target			.target			a group of systemd units
+Automount		.automount		a file system automount point
+Device 			.device			a device file recognized by the kernel
+Mount 			.mount			a file system mount point
+
+3. Manage services
+
+4. The Service Unit Sections
+	1.[Unit]: contains the options that are not dependent on the type of the unit
+	2.[Service]: info about the specific service type
+	3.[Install]: info about the installation used by systemctl enable and disable 
+[Unit] :
+	.Description - displayed in the output status cmd
+	.Documentation - provides a URL for the doc
+	.After/Before - defines the order in which the units will be started, this means that the unit can only
+			start after/before another dependant unit is started
+	.Requires - This configures dependencies on unit files. 
+	.Wants
+	.Conflicts
+[Service] :
+	.Service Type: 
+		1.simple: the default value, the process started ExecStart is the main process of the service
+		2.forking: the process started with ExecStart spawns a child process that becomes the main 
+			   process of the service.
+		3.Oneshot: is similar to simple, but the process exits before starting consequent units
+		4.dbus
+		5.notify 
+	.ExecStart: used to specifiy the cmd that will be executed when the service starts, this can be a 
+		    path to a binary file with other commands passed on or a path to a shell script
+	.ExecStop
+	.ExecReload
+	.Restart
+	.RemainAfterExit
