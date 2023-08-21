@@ -1,0 +1,65 @@
+1. install :cp file and set attributed 
+refer : https://www.geeksforgeeks.org/install-command-in-linux-with-examples/
+-C, –compare : Used to compare each pair of source and destination files. But in some cases it does not modify the destination.
+
+2. ranlib : generate index to archive 
+refer : https://www.geeksforgeeks.org/ranlib-command-in-linux-with-examples/#:~:text=ranlib%20command%20in%20Linux%20is%20used%20to%20generate,nm%20%E2%80%93print-armap%20to%20list%20all%20of%20this%20index.
+main.o
+Point.o
+Reactandle.o
+ar r fruits.a main.o Point.o Rectangle.o 
+ranlib fruits.a 
+
+3. mount/unmount 
+mount a device in a directory using the mount command 
+
+4. df 
+displays the amount of disk space available on the file system containing each file name
+argument. 
+	df [OPTION]...[FILE]...
+-k : its use is like -block-size-1k, -> file available in this device
+
+5. zcat 
+zcat *.gz *.gz 
+zcat -f *.txt
+zcat -f *.gz *.gz  *.txt
+
+6. ldd
+the ldd command is used to print the shared library dependencies of an executable or a shared library
+$ sudo ldd /usr/sbin/sshd | grep libpam.so
+
+7. tee
+read from standard inout and write to standard output and files
+sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
+> deb http://ddebs.ubuntu.com/ ${codename}      main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
+EOF
+deb http://ddebs.ubuntu.com/ jammy      main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-security main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-updates  main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-proposed main restricted universe multiverse
+root@kdump-VM:/home/kdump#
+root@kdump-VM:/home/kdump#
+root@kdump-VM:/home/kdump# cat /etc/apt/sources.list.d/ddebs.list
+deb http://ddebs.ubuntu.com/ jammy      main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-security main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-updates  main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-proposed main restricted universe multiverse
+
+8. tar 
+tar czf aosxsim.tgz ramdisk.gz vmlinuz built;
+
+c: create an archive by bundling files and directory together
+z: uses gzip compression when creating a tar file, resulting in a compressed archice with '.tar.gz' ext
+f: specifies the filename of the archive to be created or extracted
+
+9. curl
+	transfer a URL 
+curl is a tool for transferring data from or to a server. It supports these prorotols: DICT, HTTP,
+HTTPS,...
+The command is designed to work without user interaction
+ex:
+	curl -X GET https://api.apify.com/v2/key-value-stores/tVaYRsPHLjNdNBu7S/records/LATEST?disableRedirect=true
+
