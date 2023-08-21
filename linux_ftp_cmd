@@ -1,0 +1,26 @@
+		How to use the FTP command on linux
+
+===================================================================================================
+>>> warning donot use ftp over the internet
+
+>>> the ftp Command
+	ftp <IP>
+warning: should only use the ftp command to connect to servers on a trusted local network, 
+use the sftp command for transferringg files over the internet
+
+>>> looking around and retrieving files
+.list of the files: ls 
+.get a file: get 
+	get gc.c 
+.get multiple files at once: mget
+	mget gc.c ga.a
+
+>>> upload files to the ftp server
+.put a file: put
+	put gc.put
+.put multiple files: mput 
+
+>>> creating and changing directories
+.create: mkdir
+	mkdir music
+.quickly moved to the parent directory of the current dir use the cdup cmd
