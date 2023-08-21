@@ -1,0 +1,31 @@
+Networking your docker containers using docker0 bridge :
+========================================================
+1. Overview 
+- how to use and customize the default docker0 bridge -> setup networking for docker containers
+- Docker server creates and configures the host system's docker0 as an Ethernet bridge inside Linux kernel
+that could be used by the docker containers to communicate with each other and with the outside world
+- the docker0 bridge is virtual interface created by the docker, it randomly chooses an address and subnet RFC1918
+all the docker containers will be connected to the docker0 bridgeby default
+- docker containers connected to the docker0 bridge could use the iptables NAT rules created by the docker 
+
+2. How the docker0 bridge is created ?
+docker0 bridge will be created when the docker service is started 
+
+3. docker0 bridge and NAT rules under the hood 
+docker0 is a Linux bridge without any real network adapter attached, and configued with ip addr 172.17.0.1/16
+Docker also creates the iptables NAT rules on the docker host that could be used by the docker containers
+connected to docker0 bridge to connect to the outside world. 
+
+4. Connects the docker containers to docker0 bridge 
+by the default Docker will attach all containers to docker0 bridge, so you do not need to specify any additional
+flag with docker run cmd to connect the docker containers to the docker0 bridge, unless the DOCKER_OPTS in docker
+configuration file explicitly specifies to use the other network than docker0 bridge, this case you could use 
+
+5. customize docker0 bridge :
+the default configuration ò docker0 works for most of the cases, however, you could custimize the docker0 configuration
+per your requirements, the following options of docker0 are configuration at server startup:
+--bip=CIDR - supply a specific IP address and netmask for the docker0 bridge, using standard CIDR like 
+	192.168.1.5/24
+--fixed-cidr=CIDR - restrict the IP range from the docker0 subnet, using the standard CIDR notation like 	
+-- mtu=BYTES - override the maximum packet length on docker0
+
