@@ -1,0 +1,22 @@
+how #ifdef __cplusplus work ? 
+------------------------------
+extern "C" - doesn't really change the way that the compiler reads the code
+*.c -> be compiled as C 
+*.cpp -> as cpp
+What extern "C" does is affect linkage 
+
+extern "C" :
+============
+is used to make a function name that has a link with C, this is a case when the compiler
+dosen't mangle the function
+Mangling ?
+we can have the feature of a function overloading, which we can use to create the function 
+with the same name but with different types of arguments and datatypes.
+refer : https://js.educative.io/answers/what-is-the-effect-of-extern-c-in-cpp
+
+extern "C" second :
+===================
+refer : https://www.delftstack.com/howto/c/extern-c/
+we use the extern keyoword to define glocal variables, also known as external variables, 
+and defined outside the method (function) 
+when extern keyword us used in the C++ file, a specific function name in C++ has a C linkage.
