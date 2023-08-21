@@ -1,0 +1,19 @@
+Guide for packaging from a folder/application
+1. wheel package : 
+refer : https://github.com/Azure/sonic-buildimage/tree/master/src/sonic-host-services
+
+
+2. debian package  
+refer : https://github.com/Azure/sonic-buildimage/tree/master/src/sonic-host-services-data
+
+......
+how to write required files under debian folder : rules, changelog, control, compat, copyright
+1. debian/rules : 
+refer :https://manpages.debian.org/jessie/debhelper/dh.1.en.html#:~:text=A%20debian%2Frules%20file%20using%20dh%20can%20override%20the,run%20dh_command%2C%20dh%20will%20instead%20call%20that%20target.
+
+python3/2 
+refer : https://lists.debian.org/debian-python/2014/03/msg00090.html
+
+other refer : 
+1. https://medium.com/@pyc0d3r/packaging-python-project-to-debian-deb-part-2-ea6d98e2d716
+2. https://medium.com/@pyc0d3r/packaging-python-project-to-debian-deb-part-1-f01f510d7d10
