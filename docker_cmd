@@ -1,0 +1,96 @@
+1. docker tag 
+Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+
+	$ docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+2. docker inspect 
+Return low-level information on Docker objects 
+	$ docker inspect [OPTIONS] NAME|ID [NAME|ID...]
+options :
+--format, -f : format the output using the given go template
+--size, -s   : display total file sizes if the type is container
+--type	     : return JSON for specified type 
+
+3. docker start 
+Start one or more stopped containers 
+	
+4. docker save 
+Save one or more images to a tar archive (streamed to STDOUT by default)
+	$ docker save [OPTIOPNS] IMAGE [IMAGE ...]
+example :
+	$ docker save docker-$(1) | gzip -c > /main/built/dockers/docker-$(1).gz
+	$ docker save myimage:latest | gzip > myimage_latest.tar.gz 
+-c --stdout --to-stdout
+Write output on standard output; keep original files unchanged. If there are several input files, 
+the output consists of a sequence of independently compressed members. To obtain better compression,
+ concatenate all input files before compressing them.
+
+5. docker rm 
+Remove one or more containers 
+	$ docker rm [OPTIONS] CONTIANER [CONTAINER ...]
+options : 
+--force, -f : force the removal of a running container (uses SIGKILL) 
+
+ex:
+docker rm -f database$DEV
+
+5. docker create 
+Create a new container
+	$ docker create [OPTIONS] IMAGE [COMMAND] [ARG...]
+docker create --privileged -t -v /etc/abs:/etc/abc:ro  \
+        --net=$NET \
+        --uts=host \
+        -v /var/run/redis$DEV:/var/run/redis:rw \
+        $REDIS_MNT \
+        -v /usr/share/abc/device/$PLATFORM:/usr/share/abc/platform:ro \
+                -v /dev/log:/dev/log:rw \
+        --tmpfs /tmp \
+        --tmpfs /var/tmp \
+        --env "NAMESPACE_ID"="$DEV" \
+        --env "NAMESPACE_PREFIX"="$NAMESPACE_PREFIX" \
+        --env "NAMESPACE_COUNT"=$NUM_ASIC \
+        --name=database$DEV docker-database:latest || {
+            echo "Failed to docker run" >&1
+            exit 4
+    }
+options :
+--privileged : give extended privileges to this container
+-t : allocate a pseudo-TTY 
+-v : Bind mount a volume 
+--net : Connect a container to a network 
+--uts : UTS namespace to use 
+--tmpfs :  mount a tmpfs directory 
+--env : set environment variables 
+--name : assign a name to the container
+ 
+6. undocker
+@docker save docker-$(1) | undocker -t -o /main/built/dockers
+-t : extract only the last layer 
+-o : output directory, defaults to "."
+
+7. docker top
+Display the runnning processes of a container 
+
+8.docker build
+Build an image from a Dockerfile
+	$ docker build [OPTIONS] PATH | URL | -
+OPTIONS: 
+--build-arg		Set build-time variables
+
+9. docker cp 
+copy files/folders between a container and the local filesystem
+	$docker cp [options] container:src_path dest_patj
+	$docker cp [options] src_path container:dest_path
+$ docker cp ./files CONTAINER:/work
+cp local file into container
+
+10. docker network inspect
+display detailed information on one or more networks 
+	$docker network inspect [OPTIONS] NETWORK [NETWORK...] 
+docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}'
+Bridge : all docker installations represent the docker0 network with bridge. Docker connects to
+bridge by default. Run ifconfig on the Linux host to view the bridge network.
+	$ docker network inspect bridge 
+-> docker returns a Json object describing the bridge network ( including information regarding which
+containers run on the network, the options set, and listing the subnet and gate way. 
+
+11: docker run = docker create + docker start.
