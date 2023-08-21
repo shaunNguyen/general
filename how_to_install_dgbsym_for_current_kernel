@@ -1,0 +1,117 @@
+		Installing Ubuntu Kernel Debugging Symbols
+
+================================
+
+Debugging symbols contain source code level information such as function names, 
+function calling conventions, and source line numbers to instructions mapping. 
+
+This information is very useful when debugging or profiling the kernel. 
+
+there're 2 ways to get the debugging symbols:
+	.build the source code of the kernel with debugging symbols, when you want to
+	 modify the source code and work on your own kernel.
+	.install the symbols separately, just download
+
+Step 1: GPG key import
+Make sure that you havs the GPG key of your system:
+	root@kdump-VM:/home/kdump# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622
+	Warning: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead (see apt-key(8)).
+	Executing: /tmp/apt-key-gpghome.CKGKe2tD0O/gpg.1.sh --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622
+	gpg: key C8CAB6595FDFF622: public key "Ubuntu Debug Symbol Archive Automatic Signing Key (2016) <ubuntu-archive@lists.ubuntu.com>" imported
+	gpg: Total number processed: 1
+	gpg:               imported: 1
+
+root@kdump-VM:/home/kdump# codename=$(lsb_release -c | awk  '{print $2}')
+kdump@kdump-VM:~$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 22.04.2 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.2 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+kdump@kdump-VM:~$
+kdump@kdump-VM:~$
+kdump@kdump-VM:~$
+kdump@kdump-VM:~$ lsb_release -c | awk  '{print $2}'
+jammy
+kdump@kdump-VM:~$
+kdump@kdump-VM:~$ which lsb_release
+/usr/bin/lsb_release
+
+ http://debian-archive.trafficmanager.net/debian
+
+admin@sonic:~$ lsb_release -cs
+-bash: lsb_release: command not found
+admin@sonic:~$ sudo apt-get install lsb-release
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following additional packages will be installed:
+  distro-info-data
+Suggested packages:
+  lsb
+The following NEW packages will be installed:
+  distro-info-data lsb-release
+0 upgraded, 2 newly installed, 0 to remove and 0 not upgraded.
+Need to get 34.8 kB of archives.
+After this operation, 80.9 kB of additional disk space will be used.
+Do you want to continue? [Y/n] y
+
+
+root@sonic:/home/admin# sudo apt update
+Get:1 https://download.docker.com/linux/debian buster InRelease [54.0 kB]
+Get:2 http://debian-archive.trafficmanager.net/debian buster InRelease [122 kB]
+Get:3 http://debian-archive.trafficmanager.net/debian-security buster/updates InRelease [34.8 kB]
+Get:4 http://debian-archive.trafficmanager.net/debian buster-backports InRelease [51.4 kB]
+Get:5 https://download.docker.com/linux/debian buster/stable amd64 Packages [49.7 kB]
+Get:6 http://debian-archive.trafficmanager.net/debian buster/contrib Sources [50.3 kB]
+Get:7 http://debian-archive.trafficmanager.net/debian buster/main Sources [10.4 MB]
+Get:8 http://debian-archive.trafficmanager.net/debian buster/non-free Sources [104 kB]
+Get:9 http://debian-archive.trafficmanager.net/debian buster/contrib amd64 Packages [60.3 kB]
+Get:10 http://debian-archive.trafficmanager.net/debian buster/non-free amd64 Packages [107 kB]
+Get:11 http://debian-archive.trafficmanager.net/debian buster/main amd64 Packages [10.7 MB]
+Get:12 http://debian-archive.trafficmanager.net/debian-security buster/updates/main Sources [629 kB]
+Get:13 http://debian-archive.trafficmanager.net/debian-security buster/updates/non-free Sources [2,923 B]
+Get:14 http://debian-archive.trafficmanager.net/debian-security buster/updates/non-free amd64 Packages [10.6 kB]
+Get:15 http://debian-archive.trafficmanager.net/debian-security buster/updates/main amd64 Packages [698 kB]
+Get:16 http://debian-archive.trafficmanager.net/debian buster-backports/contrib amd64 Packages [9,196 B]
+Get:17 http://debian-archive.trafficmanager.net/debian buster-backports/main amd64 Packages [487 kB]
+Get:18 http://debian-archive.trafficmanager.net/debian buster-backports/non-free amd64 Packages [37.2 kB]
+
+
+root@kdump-VM:/home/kdump# sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
+> deb http://ddebs.ubuntu.com/ ${codename}      main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
+EOF
+deb http://ddebs.ubuntu.com/ jammy      main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-security main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-updates  main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-proposed main restricted universe multiverse
+root@kdump-VM:/home/kdump#
+root@kdump-VM:/home/kdump#
+root@kdump-VM:/home/kdump# cat /etc/apt/sources.list.d/ddebs.list
+deb http://ddebs.ubuntu.com/ jammy      main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-security main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-updates  main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ jammy-proposed main restricted universe multiverse
+root@kdump-VM:/home/kdump#
+root@kdump-VM:/home/kdump#
+root@kdump-VM:/home/kdump#
+root@kdump-VM:/home/kdump# apt-get update
+Hit:1 http://vn.archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://vn.archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+...........
+
+root@kdump-VM:/home/kdump# sudo apt-get install linux-image-$(uname -r)-dbgsym
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
